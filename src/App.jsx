@@ -12,6 +12,7 @@ import Home from './components/Screens/Home'
 import Library from './components/Screens/Library'
 import ArticlePage from './components/Screens/ArticlePage'
 import Message from './components/Screens/Message'
+import EditArticle from './components/Screens/EditArticle'
 
 function App() {
 
@@ -24,11 +25,12 @@ function App() {
 					<Route path='/' element={<Mainpage />} />
                     <Route path='/library' element={<Library/>}/>
 					<Route path='/login' element={<Login />} />
-                    <Route path="/article" element={<ArticlePage />} />
+                    <Route path="/article" element={<ArticlePage disabled={true}/>} />
                     <Route path="/message" element={<Message/>}/>
 					<Route element={<ProtectedRoute />}>
 						<Route path='/home' element={<Home/>}/>
 						<Route path='/dashboard' element={<Dashboard />} />
+                        <Route path="/edit" element={<EditArticle/>} />
 						<Route path='/settings' element={<Settings />} />
 					</Route>
 				</Routes>

@@ -1,11 +1,9 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { API_URL } from "../../config/api";
-import { useAuth } from "../Auth/AuthContext";
 import { useNavigate } from "react-router-dom";
 
 function Mainpage() {
     const navigate = useNavigate();
-    const { user } = useAuth();
     const [articles, setArticles] = useState([]);
 
     const getText = (body) => {

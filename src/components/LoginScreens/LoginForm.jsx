@@ -28,7 +28,7 @@ function LoginForm({ handleLogin }) {
 
       <button
         type="submit"
-        className="border px-4 py-2 rounded"
+        className="border px-4 py-2 rounded bg-white"
       >
         Submit
       </button>

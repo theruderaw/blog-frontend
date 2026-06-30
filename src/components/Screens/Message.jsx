@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import Textfield from '../Common/Textfield'
 import UserSelector from '../Common/UserSelector'
 import { API_URL } from '../../config/api'
