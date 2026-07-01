@@ -30,7 +30,7 @@ function Home() {
         const fetchUsername = async () => {
             try {
                 const response = await fetch(`${API_URL}gen/username?user_id=${user.id}`);
-                const data = await response.json();
+                const { data, meta } = await response.json();
                 setUsername(data.username);
             } catch (error) {
                 console.log(error);
@@ -46,12 +46,7 @@ function Home() {
             clearTimeout(debounceTimeoutRef.current);
         }
 
-        if (!slug.trim()) {
-            return;
-        }
-
-        // Fix: Removed synchronous setState from here entirely.
-        // It is now managed directly inside generateSlug where the user types.
+        if (!slug.trim()) return;
 
         debounceTimeoutRef.current = setTimeout(async () => {
             try {
@@ -85,7 +80,6 @@ function Home() {
 
         setSlug(computedSlug);
 
-        // Set state here safely inside user interaction event handler
         if (computedSlug.trim().length > 0) {
             setIsCheckingSlug(true);
         } else {
@@ -136,17 +130,18 @@ function Home() {
 
     return (
         <MantineProvider>
-            <div className="text-white px-8 py-6">
+            {/* 1. Added h-full, w-full, flex flex-col, and overflow-hidden to fit the parent layout block exactly */}
+            <div className="text-white px-8 py-6 h-full w-full flex flex-col overflow-hidden">
                 
                 {/* Top row */}
-                <div className="flex items-center justify-between mb-8">
+                <div className="flex items-center justify-between mb-6 flex-shrink-0">
                     <div className="w-3/4">
                         <input
                             type="text"
                             placeholder="Enter title..."
                             value={title}
                             onChange={(e) => generateSlug(e.target.value)}
-                            className="w-full bg-transparent border-b text-4xl font-bold outline-none placeholder:text-zinc-500 pb-2 focus:border-white transition-all"
+                            className="w-full bg-transparent border-b border-zinc-800 text-4xl font-bold outline-none placeholder:text-zinc-500 pb-2 focus:border-white transition-all"
                         />
                     </div>
 
@@ -156,19 +151,20 @@ function Home() {
                     </div>
                 </div>
 
-                {/* Editor */}
-                <div className="rounded-2xl border p-6 shadow-lg mb-8">
+                {/* 2. Scrollable Editor Frame container */}
+                {/* flex-1 causes this container to stretch exactly across the available height, and overflow-y-auto forces internal scrolling */}
+                <div className="flex-1 min-h-0 border border-zinc-800 rounded-2xl p-6 shadow-lg mb-6 overflow-y-auto transparent-editor">
                     <BlockNoteView
                         editor={editor}
+                        theme="dark"
                         onChange={() => setContent(editor.document)}
                     />
                 </div>
 
                 {/* Bottom controls */}
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between flex-shrink-0">
                     <p className="text-zinc-500 text-sm">
                         SLUG : {slug}
-                        
                         {displaySlugUnavailable && " (slug unavailable)"}
                         {hasSlug && isCheckingSlug && " (checking...)"}
                     </p>
@@ -176,17 +172,15 @@ function Home() {
                     <button
                         onClick={handleSubmit}
                         disabled={isSubmitting || displaySlugUnavailable}
-                        className="px-6 py-3 rounded-xl bg-white text-black font-semibold hover:scale-105 transition-transform"
+                        className="px-6 py-3 rounded-xl bg-white text-black font-semibold hover:scale-105 transition-transform disabled:opacity-50 disabled:hover:scale-100"
                     >
                         Submit
                     </button>
                 </div>
 
                 {uploadedArticle && (
-                    <div>
-                        <h3>Uploaded Article:</h3>
-                        <p>Title: {uploadedArticle.title}</p>
-                        <p>Slug: {uploadedArticle.slug}</p>
+                    <div className="mt-4 text-xs text-zinc-400 flex-shrink-0">
+                        <p>Uploaded: {uploadedArticle.title} ({uploadedArticle.slug})</p>
                     </div>
                 )}
 

@@ -16,7 +16,8 @@ function Dashboard() {
                 const res = await fetch(
                     `${API_URL}articles/user?page_no=1&page_size=10&author_id=${user.id}`
                 );
-                const data = await res.json();
+                const {data : data,meta} = await res.json();
+                console.log(meta)
                 setArticles(Array.isArray(data) ? data : []);
             } catch (error) {
                 console.log(error);

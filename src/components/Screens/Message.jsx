@@ -18,8 +18,8 @@ function Message() {
                     `${API_URL}gen/users`
                 )
 
-                const data = await response.json()
-                console.log(data)
+                const {data:data,meta} = await response.json()
+                console.log(meta)
                 setUserList(data)
             } catch (error) {
                 console.log(error)
@@ -51,7 +51,7 @@ function Message() {
                 });
 
             const data = await response.json()
-            console.log(data)
+            console.log(data.meta)
         } catch (error) {
             console.log(error)
         } finally {

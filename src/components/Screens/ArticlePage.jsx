@@ -5,6 +5,9 @@ import { BlockNoteView } from "@blocknote/mantine";
 import "@blocknote/core/fonts/inter.css";
 import "@blocknote/mantine/style.css";
 
+import { MantineProvider } from "@mantine/core";
+import "@mantine/core/styles.css";
+
 import { API_URL } from "../../config/api";
 import { useAuth } from "../Auth/AuthContext";
 
@@ -30,7 +33,13 @@ function ArticlePage() {
                         "accept": "application/json",
                     },
                 });
-                const data = await res.json();
+
+                // Parse the standard response envelope
+                const responseEnvelope = await res.json();
+
+                // Destructure the data and meta fields for clean usage
+                const { data, meta } = responseEnvelope;
+                console.log(meta);
                 
                 // Handle array formats if returned from database search
                 const articleData = Array.isArray(data) ? data[0] : data;
@@ -48,69 +57,51 @@ function ArticlePage() {
         fetchArticle();
     }, [slug, editor]);
 
-    // 2. PATCH Request: Save structural modifications back to server
-    const handleSaveChanges = async () => {
-        if (!user?.id || !article) return;
-        setIsSaving(true);
-
-        try {
-            const payload = {
-                user_uuid: user.id, // Populated securely via useAuth payload context
-                title: article.title,
-                slug: article.slug,
-                status: article.status || "draft",
-                body: editor.document // Grabs structural rich-text JSON schema directly
-            };
-
-            const response = await fetch(`${API_URL}articles/`, {
-                method: "PATCH",
-                headers: {
-                    "accept": "application/json",
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify(payload),
-            });
-
-            if (response.ok) {
-                const updatedData = await response.json();
-                console.log("Changes successfully saved:", updatedData);
-                alert("Article saved successfully!");
-            } else {
-                console.error("Server rejected patch structural updates.");
-            }
-        } catch (error) {
-            console.error("Network fault processing PATCH sync:", error);
-        } finally {
-            setIsSaving(false);
-        }
-    };
-
     if (!article) {
-        return <div className="p-6 text-zinc-400 font-mono text-xs">Loading context...</div>;
+        return <div className="p-6 text-zinc-500 font-mono text-xs">Loading context...</div>;
     }
 
     return (
-        <div className="p-6 max-w-4xl mx-auto">
-            {/* Header Toolbar */}
-            <div className="flex justify-between items-center mb-6 border-b border-zinc-800 pb-4">
-                <div>
-                    <h1 className="text-3xl font-bold text-white mb-1">{article.title}</h1>
-                    <p className="text-xs text-zinc-500 font-mono">Slug: {article.slug}</p>
+        <MantineProvider defaultColorScheme="dark">
+            {/* Matches Home exact outer wrapper layout structure */}
+            <div className="text-white px-8 py-6 h-full w-full flex flex-col overflow-hidden">
+                
+                {/* Top Row: Exactly matches Home header columns layout */}
+                <div className="flex items-center justify-between mb-8 flex-shrink-0">
+                    <div className="w-3/4">
+                        <h1 className="w-full text-4xl font-bold pb-2 border-b border-zinc-800 tracking-tight">
+                            {article.title}
+                        </h1>
+                    </div>
+
+                    <div className="text-right">
+                        <p className="text-zinc-400 text-sm">Author</p>
+                        <p className="font-medium text-lg">@{user?.username || "anonymous"}</p>
+                    </div>
                 </div>
 
-                {/* Save button visible strictly when accessed via protected route properties */}
-                
-            </div>
+                {/* Editor Container: Fixed to match exact transparent-editor classes */}
+                <div className="flex-1 min-h-0 border border-zinc-800 rounded-2xl p-6 shadow-lg mb-8 overflow-y-auto transparent-editor">
+                    <BlockNoteView 
+                        editor={editor} 
+                        editable={false} 
+                        theme="dark" 
+                    />
+                </div>
 
-            {/* Rich Text Editor Container */}
-            <div className="bg-zinc-950 border border-zinc-800 rounded-lg p-4 max-h-[60vh] overflow-y-auto">
-                <BlockNoteView 
-                    editor={editor} 
-                    editable={false} 
-                    theme="dark" 
-                />
+                {/* Bottom Footer Status Area */}
+                <div className="flex items-center justify-between flex-shrink-0">
+                    <p className="text-zinc-500 text-sm font-mono">
+                        SLUG : {article.slug}
+                    </p>
+                    
+                    <div className="flex items-center gap-4">
+                        {/* Space placeholder to maintain structural scaling alignments */}
+                    </div>
+                </div>
+
             </div>
-        </div>
+        </MantineProvider>
     );
 }
 

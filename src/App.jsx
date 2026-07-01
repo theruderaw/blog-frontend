@@ -15,28 +15,39 @@ import Message from './components/Screens/Message'
 import EditArticle from './components/Screens/EditArticle'
 
 function App() {
+    return (
+        <AuthProvider>
+            <BrowserRouter>
+                {/* 1. Root container pins layout to exact viewport dimensions and stops window scrolling */}
+                <div className="flex flex-col h-screen w-screen overflow-hidden bg-black relative">
+                    
+                    {/* Background canvas stays safely structural behind the text */}
+                    <PointBackground/>
 
-	return (
-		<AuthProvider>
-			<BrowserRouter>
-				<PointBackground/>
-				<Navbar />
-				<Routes>
-					<Route path='/' element={<Mainpage />} />
-                    <Route path='/library' element={<Library/>}/>
-					<Route path='/login' element={<Login />} />
-                    <Route path="/article" element={<ArticlePage disabled={true}/>} />
-                    <Route path="/message" element={<Message/>}/>
-					<Route element={<ProtectedRoute />}>
-						<Route path='/home' element={<Home/>}/>
-						<Route path='/dashboard' element={<Dashboard />} />
-                        <Route path="/edit" element={<EditArticle/>} />
-						<Route path='/settings' element={<Settings />} />
-					</Route>
-				</Routes>
-			</BrowserRouter>
-		</AuthProvider>
-	)
+                    {/* 2. Navbar spans full width and auto-sizes horizontally */}
+                    <Navbar />
+
+                    {/* 3. This wrapper captures 100% of the remaining height below the Navbar */}
+                    <main className="flex-1 w-full min-h-0 relative z-10">
+                        <Routes>
+                            <Route path='/' element={<Mainpage />} />
+                            <Route path='/library' element={<Library/>}/>
+                            <Route path='/login' element={<Login />} />
+                            <Route path="/article" element={<ArticlePage disabled={true}/>} />
+                            <Route path="/message" element={<Message/>}/>
+                            <Route element={<ProtectedRoute />}>
+                                <Route path='/home' element={<Home/>}/>
+                                <Route path='/dashboard' element={<Dashboard />} />
+                                <Route path="/edit" element={<EditArticle/>} />
+                                <Route path='/settings' element={<Settings />} />
+                            </Route>
+                        </Routes>
+                    </main>
+
+                </div>
+            </BrowserRouter>
+        </AuthProvider>
+    )
 }
 
 export default App

@@ -1,1 +1,6 @@
 @import "tailwindcss";
+
+/* Target BlockNote's internal layout to strip its dark gray background */
+.bn-editor {
+  background-color: transparent !important;
+}

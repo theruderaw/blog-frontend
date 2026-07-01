@@ -5,6 +5,9 @@ import { BlockNoteView } from "@blocknote/mantine";
 import "@blocknote/core/fonts/inter.css";
 import "@blocknote/mantine/style.css";
 
+import { MantineProvider } from "@mantine/core";
+import "@mantine/core/styles.css";
+
 import { API_URL } from "../../config/api";
 import { useAuth } from "../Auth/AuthContext";
 
@@ -15,6 +18,7 @@ function EditArticle() {
     const slug = searchParams.get("slug");
 
     const [article, setArticle] = useState(null);
+    const [title, setTitle] = useState("");
     const [isSaving, setIsSaving] = useState(false);
     const [blocksLoaded, setBlocksLoaded] = useState(false);
     
@@ -30,13 +34,13 @@ function EditArticle() {
                     method: "GET",
                     headers: { "accept": "application/json" }
                 });
-                const data = await res.json();
-                const articleData = Array.isArray(data) ? data[0] : data;
-                setArticle(articleData);
-                console.log(article)
+                const { data, meta } = await res.json();
+                console.log(meta);
+                setArticle(data);
+                setTitle(data?.title || "");
 
-                if (articleData?.body && !blocksLoaded) {
-                    editor.replaceBlocks(editor.document, articleData.body);
+                if (data?.body && !blocksLoaded) {
+                    editor.replaceBlocks(editor.document, data.body);
                     setBlocksLoaded(true);
                 }
             } catch (err) {
@@ -55,11 +59,11 @@ function EditArticle() {
         try {
             const payload = {
                 user_uuid: user.id,
-                title: article.title,
+                title: title,
                 slug: article.slug,
                 status: targetStatus,
                 article_id: article.id,
-                body: editor.document // Grabs array structural JSON schema directly
+                body: editor.document 
             };
 
             const response = await fetch(`${API_URL}articles/`, {
@@ -72,10 +76,17 @@ function EditArticle() {
             });
 
             if (response.ok) {
-                setArticle(prev => ({ ...prev, status: targetStatus }));
+                const responseEnvelope = await response.json();
+                const { data: updatedArticle } = responseEnvelope;
+
+                setArticle(prev => ({ 
+                    ...prev, 
+                    ...updatedArticle, 
+                    status: targetStatus 
+                }));
                 
                 if (targetStatus === "published") {
-                    navigate("/dashboard"); // Take them back to dashboard after publishing
+                    navigate("/dashboard"); 
                 }
             } else {
                 console.error("Server rejected patch request.");
@@ -92,39 +103,65 @@ function EditArticle() {
     }
 
     return (
-        <div className="w-full max-w-full px-4 box-border">
-    <div className="flex justify-between items-center">
-        <div className="flex items-center gap-4">
-            <h1 className="font-bold text-white m-0 text-3xl">{article.title}</h1>
-            <span className="uppercase bg-zinc-800 text-zinc-300 border border-zinc-700">
-                {article.status || "draft"}
-            </span>
-        </div>
+        <MantineProvider defaultColorScheme="dark">
+            {/* Matches Home exact outer wrapper system: full height, hidden scroll, precise padding */}
+            <div className="text-white px-8 py-6 h-full w-full flex flex-col overflow-hidden">
+                
+                {/* Top Row: Layout matches Home view precisely */}
+                <div className="flex items-center justify-between mb-8 flex-shrink-0">
+                    <div className="w-3/4">
+                        <input
+                            type="text"
+                            placeholder="Enter title..."
+                            value={title}
+                            onChange={(e) => setTitle(e.target.value)}
+                            className="w-full bg-transparent border-b border-zinc-800 text-4xl font-bold outline-none placeholder:text-zinc-500 pb-2 focus:border-white transition-all"
+                        />
+                    </div>
 
-        <div className="flex items-center gap-4">
-            <button 
-                onClick={() => handleSync("draft")} 
-                disabled={isSaving}
-                className="bg-zinc-800 hover:bg-zinc-700 text-zinc-200 rounded transition-colors px-3 py-1.5"
-            >
-                Save Draft
-            </button>
-            <button 
-                onClick={() => handleSync("published")} 
-                disabled={isSaving}
-                className="bg-blue-600 hover:bg-blue-500 text-white rounded transition-colors px-3 py-1.5"
-            >
-                Publish
-            </button>
-        </div>
-    </div>
+                    <div className="text-right">
+                        <p className="text-zinc-400 text-sm">Status</p>
+                        <p className="font-medium text-lg uppercase tracking-wider text-zinc-300">
+                            {article.status || "draft"}
+                        </p>
+                    </div>
+                </div>
 
-    <BlockNoteView 
-        editor={editor} 
-        editable={true} 
-        theme="dark" 
-    />
-</div>
+                {/* Editor Container: Identical height distribution and rounded styles */}
+                <div className="flex-1 min-h-0 border border-zinc-800 rounded-2xl p-6 shadow-lg mb-8 overflow-y-auto transparent-editor">
+                    <BlockNoteView
+                        editor={editor}
+                        theme="dark"
+                    />
+                </div>
+
+                {/* Bottom Row: Controls match Home's footer placement exactly */}
+                <div className="flex items-center justify-between flex-shrink-0">
+                    <p className="text-zinc-500 text-sm font-mono">
+                        SLUG : {article.slug}
+                    </p>
+
+                    <div className="flex items-center gap-4">
+                        <button 
+                            onClick={() => handleSync("draft")} 
+                            disabled={isSaving}
+                            className="px-6 py-3 rounded-xl border border-zinc-700 bg-zinc-900 text-zinc-200 font-semibold hover:scale-105 transition-transform disabled:opacity-50 disabled:hover:scale-100"
+                        >
+                            Save Draft
+                        </button>
+                        
+                        <button 
+                            onClick={() => handleSync("published")} 
+                            disabled={isSaving}
+                            className="px-6 py-3 rounded-xl bg-white text-black font-semibold hover:scale-105 transition-transform disabled:opacity-50 disabled:hover:scale-100"
+                        >
+                            Publish
+                        </button>
+                    </div>
+                </div>
+                
+            </div>
+        </MantineProvider>
     );
 }
 

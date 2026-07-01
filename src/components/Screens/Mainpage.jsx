@@ -26,9 +26,9 @@ function Mainpage() {
                     `${API_URL}articles?&page_no=1&page_size=6`
                 );
 
-                const data = await response.json();
+                const {data:data,meta} = await response.json();
                 setArticles(data);
-                console.log(data)
+                console.log(meta)
             } catch (error) {
                 console.log(error);
             }

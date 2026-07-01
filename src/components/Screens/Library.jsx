@@ -13,8 +13,8 @@ function Library() {
                     `${API_URL}articles?page_no=1&page_size=15`
                 );
                 
-                const data = await response.json();
-                console.log(data[0])
+                const {data:data,meta} = await response.json();
+                console.log(meta)
                 setArticles(data);
             } catch (error) {
                 console.log(error);
